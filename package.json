@@ -1,0 +1,36 @@
+{
+    "name" : "date-recur",
+    "description": "Create a recurring date and query it to see if it lands on a particular date.",
+    "version" : "0.1.0",
+    "author": {
+        "name":"Andrew Chilton",
+        "email":"chilts@appsattic.com",
+        "url":"http://www.chilts.org/"
+    },
+    "homepage": "https://github.com/appsattic/node-date-recur",
+    "contributors": [],
+    "devDependencies": {
+        "tap" :  "0.1.x"
+    },
+    "dependencies" : {
+        "underscore" : ">= 1.2.x"
+    },
+    "main": "./date-recur.js",
+    "scripts": {
+        "start": "node ./bin/http-server",
+        "test": "tap test/*.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/appsattic/node-date-recur.git"
+    },
+   "bugs" : {
+        "url" : "http://github.com/appsattic/node-date-recur/issues",
+        "mail" : "chilts@appsattic.com"
+    },
+    "licenses": [{
+        "type": "MIT",
+        "url": "http://github.com/appsattic/node-date-recur/raw/master/LICENSE"
+    }],
+    "keywords": [ "date", "recur", "query" ]
+}
