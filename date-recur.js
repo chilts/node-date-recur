@@ -119,6 +119,26 @@ DateRecur.prototype.setMonthlyInterval = function(interval) {
     return self;
 }
 
+DateRecur.prototype.setYearlyInterval = function(interval) {
+    var self = this;
+    interval = parseInt(interval);
+
+    if ( !self.start ) {
+        throw Error('You can only add an interval if this recurrence has a start date');
+    }
+
+    if ( interval <= 0 ) {
+        throw Error('Interval must be greater than zero');
+    }
+
+    self.rules.push({
+        type     : 'yearlyInterval',
+        interval : interval,
+    });
+
+    return self;
+}
+
 DateRecur.prototype.setDaysOfMonth = function(days) {
     var self = this;
     var ourDays = {};
@@ -219,7 +239,7 @@ DateRecur.prototype.matches = function(date) {
     }
 
     // now loop through all the rules
-    var i, rule, diffDays, diffMonths;
+    var i, rule, diffDays, diffMonths, diffYears;
     for ( i = 0; i < self.rules.length; i++ ) {
         rule = self.rules[i];
 
@@ -233,6 +253,12 @@ DateRecur.prototype.matches = function(date) {
         case 'monthlyInterval':
             diffMonths = diffInMonths(self.start, date);
             if ( (diffMonths % rule.interval) !== 0 ) {
+                return false;
+            }
+            break;
+        case 'yearlyInterval':
+            diffYears = date.getUTCFullYear() - self.start.getUTCFullYear();
+            if ( (diffYears % rule.interval) !== 0 ) {
                 return false;
             }
             break;
@@ -255,7 +281,6 @@ DateRecur.prototype.matches = function(date) {
             }
             break;
         }
-
     }
 
     // if we passed everything above, then this date matches
