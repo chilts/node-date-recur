@@ -53,7 +53,7 @@ Since this is a small (but very useful) library, I'll show you a number of examp
 
     // My birthday is every leap year since 1976
     var lunch = recur('1976-02-29')
-        .setYearlyInterval(2)
+        .setYearlyInterval(4)
         .setDayOfMonth(29)
         .setMonthOfYear(2);
 
