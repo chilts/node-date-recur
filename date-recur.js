@@ -38,6 +38,10 @@ function diffInDays(d1, d2) {
     return (d2 - d1) / millisecondsInOneDay;
 }
 
+function diffInMonths(d1, d2) {
+    return (d2.getUTCFullYear() - d1.getUTCFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 // DateRecur object
@@ -68,14 +72,40 @@ DateRecur.prototype.end = function(date) {
 
 DateRecur.prototype.setDailyInterval = function(interval) {
     var self = this;
+    interval = parseInt(interval);
 
     if ( !self.start ) {
         throw Error('You can only add an interval if this recurrence has a start date');
     }
 
+    if ( interval <= 0 ) {
+        throw Error('Interval must be greater than zero');
+    }
+
     // add this daily interval to the list of rules to match
     self.rules.push({
         type     : 'dailyInterval',
+        interval : interval,
+    });
+
+    return self;
+}
+
+DateRecur.prototype.setMonthlyInterval = function(interval) {
+    var self = this;
+    interval = parseInt(interval);
+
+    if ( !self.start ) {
+        throw Error('You can only add an interval if this recurrence has a start date');
+    }
+
+    if ( interval <= 0 ) {
+        throw Error('Interval must be greater than zero');
+    }
+
+    // add this daily interval to the list of rules to match
+    self.rules.push({
+        type     : 'monthlyInterval',
         interval : interval,
     });
 
@@ -101,14 +131,21 @@ DateRecur.prototype.matches = function(date) {
     }
 
     // now loop through all the rules
-    var i, rule, diff;
+    var i, rule, diffDays, diffMonths;
     for ( i = 0; i < self.rules.length; i++ ) {
         rule = self.rules[i];
 
         switch ( rule.type ) {
         case 'dailyInterval':
-            diff = diffInDays(self.start, date);
-            if ( (diff % rule.interval) !== 0 ) {
+            diffDays = diffInDays(self.start, date);
+            if ( (diffDays % rule.interval) !== 0 ) {
+                return false;
+            }
+            break;
+        case 'monthlyInterval':
+            diffMonths = diffInMonths(self.start, date);
+            console.log('diffMonths=' + diffMonths);
+            if ( (diffMonths % rule.interval) !== 0 ) {
                 return false;
             }
             break;
