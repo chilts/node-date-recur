@@ -173,6 +173,33 @@ DateRecur.prototype.setDaysOfWeek = function(days) {
     return self;
 }
 
+DateRecur.prototype.setMonthsOfYear = function(months) {
+    var self = this;
+    var ourMonths = {};
+
+    // months can be an array or object
+    if ( _.isArray(months) ) {
+        months.forEach(function(v) {
+            ourMonths[v] = true;
+        });
+    }
+    else if ( _.isObject(months) ) {
+        ourMonths = months;
+    }
+    else {
+        throw Error("Provide an array or object to setMonthsOfYear()");
+    }
+
+    checkRange(1, 12, _.keys(ourMonths));
+
+    self.rules.push({
+        type : 'monthsOfYear',
+        months : ourMonths,
+    });
+
+    return self;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // ... and the magic 'matches' function
 
@@ -218,6 +245,12 @@ DateRecur.prototype.matches = function(date) {
         case 'daysOfWeek':
             // if this day of week is not in rule.days, return false
             if ( !rule.days[date.getDay()] ) {
+                return false;
+            }
+            break;
+        case 'monthsOfYear':
+            // if this month is not in rule.months, return false
+            if ( !rule.months[date.getMonth()+1] ) {
                 return false;
             }
             break;

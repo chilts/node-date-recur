@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 //
-// days-of-month.js - tests for which days of the month a recurrence can fall
+// days-of-week.js - tests for which days of the week a recurrence can fall
 //
 // Copyright (c) 2011 AppsAttic Ltd - http://www.appsattic.com/
 // Written by Andrew Chilton <chilts@appsattic.com>
