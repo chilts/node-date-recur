@@ -91,17 +91,36 @@ DateRecur.prototype.diffInWeeks = function(d1, d2) {
     return diffInDays(d1, d2) / 7;
 }
 
-DateRecur.prototype.getStartOfWeek = function(date) {
-    while ( date.getDay() !== this.startOfWeek ) {
-        date.addDays(-1);
+DateRecur.prototype.getStartOfMonth = function(date) {
+    // since we'll be changing the date, make a copy of it
+    var d = new Date(date);
+    while ( d.getDate() !== 1 ) {
+        d.addDays(-1);
     }
-    return date;
+    return d;
+}
+
+DateRecur.prototype.getStartOfWeek = function(date) {
+    // since we'll be changing the date, make a copy of it
+    var d = new Date(date);
+    while ( d.getDay() !== this.startOfWeek ) {
+        d.addDays(-1);
+    }
+    return d;
 }
 
 DateRecur.prototype.setStartOfWeek = function(dayNumber) {
     checkRange(0, 6, [ dayNumber ]);
     this.startOfWeek = dayNumber;
     return this;
+}
+
+DateRecur.prototype.weekOfMonth = function(date) {
+    var first = this.getStartOfMonth(date);
+    var week0 = this.getStartOfWeek(first);
+
+    // our weeks are from week 0 to week 4
+    return this.diffInWeeks(week0, date);
 }
 
 DateRecur.prototype.setDailyInterval = function(interval) {
@@ -246,6 +265,37 @@ DateRecur.prototype.setDaysOfWeek = function(days) {
     return self;
 }
 
+DateRecur.prototype.setWeeksOfMonth = function(weeks) {
+    var self = this;
+    var ourWeeks = {};
+
+    // weeks can be an array or object
+    if ( _.isArray(weeks) ) {
+        weeks.forEach(function(v) {
+            ourWeeks[v] = true;
+        });
+    }
+    else if ( _.isObject(weeks) ) {
+        ourWeeks = weeks;
+    }
+    else if ( _.isNumber(weeks) ) {
+        ourWeeks = {};
+        ourWeeks[weeks] = true;
+    }
+    else {
+        throw Error("Provide an array or object to setWeeksOfMonth()");
+    }
+
+    checkRange(0, 4, _.keys(ourWeeks));
+
+    self.rules.push({
+        type  : 'weeksOfMonth',
+        weeks : ourWeeks,
+    });
+
+    return self;
+}
+
 DateRecur.prototype.setMonthsOfYear = function(months) {
     var self = this;
     var ourMonths = {};
@@ -334,6 +384,13 @@ DateRecur.prototype.matches = function(date) {
         case 'daysOfWeek':
             // if this day of week is not in rule.days, return false
             if ( !rule.days[date.getDay()] ) {
+                return false;
+            }
+            break;
+        case 'weeksOfMonth':
+            // if this week of months is not in rule.weeks, return false
+            weekOfMonth = self.weekOfMonth(date);
+            if ( !rule.weeks[weekOfMonth] ) {
                 return false;
             }
             break;
