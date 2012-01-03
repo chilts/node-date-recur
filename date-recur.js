@@ -43,6 +43,14 @@ function diffInMonths(d1, d2) {
     return (d2.getUTCFullYear() - d1.getUTCFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
 }
 
+function checkRange(low, high, list) {
+    list.forEach(function(v) {
+        if ( v < low || v > high ) {
+            throw Error('Value should be in range ' + low + ' to ' + high);
+        }
+    });
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 // DateRecur object
@@ -83,7 +91,6 @@ DateRecur.prototype.setDailyInterval = function(interval) {
         throw Error('Interval must be greater than zero');
     }
 
-    // add this daily interval to the list of rules to match
     self.rules.push({
         type     : 'dailyInterval',
         interval : interval,
@@ -104,7 +111,6 @@ DateRecur.prototype.setMonthlyInterval = function(interval) {
         throw Error('Interval must be greater than zero');
     }
 
-    // add this daily interval to the list of rules to match
     self.rules.push({
         type     : 'monthlyInterval',
         interval : interval,
@@ -130,9 +136,37 @@ DateRecur.prototype.setDaysOfMonth = function(days) {
         throw Error("Provide an array or object to setDaysOfMonth()");
     }
 
-    // add this daily interval to the list of rules to match
+    checkRange(1, 31, _.keys(ourDays));
+
     self.rules.push({
         type : 'daysOfMonth',
+        days : ourDays,
+    });
+
+    return self;
+}
+
+DateRecur.prototype.setDaysOfWeek = function(days) {
+    var self = this;
+    var ourDays = {};
+
+    // days can be an array or object
+    if ( _.isArray(days) ) {
+        days.forEach(function(v) {
+            ourDays[v] = true;
+        });
+    }
+    else if ( _.isObject(days) ) {
+        ourDays = days;
+    }
+    else {
+        throw Error("Provide an array or object to setDaysOfWeek()");
+    }
+
+    checkRange(0, 6, _.keys(ourDays));
+
+    self.rules.push({
+        type : 'daysOfWeek',
         days : ourDays,
     });
 
@@ -178,6 +212,12 @@ DateRecur.prototype.matches = function(date) {
         case 'daysOfMonth':
             // if this day of month is not in rule.days, return false
             if ( !rule.days[date.getDate()] ) {
+                return false;
+            }
+            break;
+        case 'daysOfWeek':
+            // if this day of week is not in rule.days, return false
+            if ( !rule.days[date.getDay()] ) {
                 return false;
             }
             break;
