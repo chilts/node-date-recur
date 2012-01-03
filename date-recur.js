@@ -22,7 +22,8 @@ var millisecondsInOneDay = 24 * 60 * 60 * 1000;
 // utility functions
 function toDate(d) {
     if ( _.isDate(d) ) {
-        return d;
+        // just get the date (no time)
+        return new Date(d.toISOString().substr(0, 10));
     }
 
     // check if the date string looks ok
