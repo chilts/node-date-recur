@@ -11,6 +11,7 @@
 // requires
 
 var _ = require('underscore');
+require('date-utils'); // polyfills the Date object with extra things
 
 // --------------------------------------------------------------------------------------------------------------------
 // constants
@@ -63,6 +64,9 @@ var DateRecur = function(options) {
         this.end = toDate(options.end);
     }
 
+    // default this to Monday
+    this.startOfWeek = 1
+
     // this is our list of rules, every one of which should match
     this.rules = [];
 
@@ -76,6 +80,27 @@ DateRecur.prototype.start = function(date) {
 
 DateRecur.prototype.end = function(date) {
     this.end = toDate(date);
+    return this;
+}
+
+DateRecur.prototype.diffInWeeks = function(d1, d2) {
+    // get the start of the week for both dates
+    d1 = this.getStartOfWeek(d1);
+    d2 = this.getStartOfWeek(d2);
+
+    return diffInDays(d1, d2) / 7;
+}
+
+DateRecur.prototype.getStartOfWeek = function(date) {
+    while ( date.getDay() !== this.startOfWeek ) {
+        date.addDays(-1);
+    }
+    return date;
+}
+
+DateRecur.prototype.setStartOfWeek = function(dayNumber) {
+    checkRange(0, 6, [ dayNumber ]);
+    this.startOfWeek = dayNumber;
     return this;
 }
 
@@ -93,6 +118,26 @@ DateRecur.prototype.setDailyInterval = function(interval) {
 
     self.rules.push({
         type     : 'dailyInterval',
+        interval : interval,
+    });
+
+    return self;
+}
+
+DateRecur.prototype.setWeeklyInterval = function(interval) {
+    var self = this;
+    interval = parseInt(interval);
+
+    if ( !self.start ) {
+        throw Error('You can only add an interval if this recurrence has a start date');
+    }
+
+    if ( interval <= 0 ) {
+        throw Error('Interval must be greater than zero');
+    }
+
+    self.rules.push({
+        type     : 'weeklyInterval',
         interval : interval,
     });
 
@@ -251,7 +296,7 @@ DateRecur.prototype.matches = function(date) {
     }
 
     // now loop through all the rules
-    var i, rule, diffDays, diffMonths, diffYears;
+    var i, rule, diffDays, diffWeeks, diffMonths, diffYears;
     for ( i = 0; i < self.rules.length; i++ ) {
         rule = self.rules[i];
 
@@ -259,6 +304,12 @@ DateRecur.prototype.matches = function(date) {
         case 'dailyInterval':
             diffDays = diffInDays(self.start, date);
             if ( (diffDays % rule.interval) !== 0 ) {
+                return false;
+            }
+            break;
+        case 'weeklyInterval':
+            diffWeeks = self.diffInWeeks(self.start, date);
+            if ( (diffWeeks % rule.interval) !== 0 ) {
                 return false;
             }
             break;

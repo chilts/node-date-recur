@@ -13,6 +13,7 @@
         "tap" :  "0.1.x"
     },
     "dependencies" : {
+        "date-utils" : ">= 1.2.x",
         "underscore" : ">= 1.2.x"
     },
     "main": "./date-recur.js",
