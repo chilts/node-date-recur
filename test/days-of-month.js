@@ -51,4 +51,14 @@ test("test the 13th and 20th of each month", function(t) {
     t.end();
 });
 
+test("test the 7th of each month", function(t) {
+    var r = recur().setDaysOfMonth(7);
+
+    t.notOk(r.matches('2012-01-01'), 'does not match first day of the month');
+    t.ok(r.matches('2012-01-07'), '7th day of the month');
+    t.notOk(r.matches('2012-01-14'), 'does not match 14th day of the month');
+
+    t.end();
+});
+
 // --------------------------------------------------------------------------------------------------------------------

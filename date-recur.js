@@ -152,6 +152,10 @@ DateRecur.prototype.setDaysOfMonth = function(days) {
     else if ( _.isObject(days) ) {
         ourDays = days;
     }
+    else if ( _.isNumber(days) ) {
+        ourDays = {};
+        ourDays[days] = true;
+    }
     else {
         throw Error("Provide an array or object to setDaysOfMonth()");
     }
@@ -179,6 +183,10 @@ DateRecur.prototype.setDaysOfWeek = function(days) {
     else if ( _.isObject(days) ) {
         ourDays = days;
     }
+    else if ( _.isNumber(days) ) {
+        ourDays = {};
+        ourDays[days] = true;
+    }
     else {
         throw Error("Provide an array or object to setDaysOfWeek()");
     }
@@ -205,6 +213,10 @@ DateRecur.prototype.setMonthsOfYear = function(months) {
     }
     else if ( _.isObject(months) ) {
         ourMonths = months;
+    }
+    else if ( _.isNumber(days) ) {
+        ourDays = {};
+        ourDays[days] = true;
     }
     else {
         throw Error("Provide an array or object to setMonthsOfYear()");
