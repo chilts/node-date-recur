@@ -22,7 +22,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/appsattic/node-date-recur.git"
+        "url": "git://github.com/appsattic/node-date-recur.git"
     },
    "bugs" : {
         "url" : "http://github.com/appsattic/node-date-recur/issues",
