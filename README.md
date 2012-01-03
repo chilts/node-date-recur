@@ -12,6 +12,8 @@
 
 Create a recurring date and query it to see if it lands on a particular date.
 
+Build Status : [![Build Status](https://secure.travis-ci.org/appsattic/node-date-recur.png)](http://travis-ci.org/appsattic/node-date-recur)
+
 # How to get date-recur #
 
     $ npm -d install date-recur
