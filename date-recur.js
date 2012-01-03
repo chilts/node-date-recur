@@ -113,6 +113,32 @@ DateRecur.prototype.setMonthlyInterval = function(interval) {
     return self;
 }
 
+DateRecur.prototype.setDaysOfMonth = function(days) {
+    var self = this;
+    var ourDays = {};
+
+    // days can be an array or object
+    if ( _.isArray(days) ) {
+        days.forEach(function(v) {
+            ourDays[v] = true;
+        });
+    }
+    else if ( _.isObject(days) ) {
+        ourDays = days;
+    }
+    else {
+        throw Error("Provide an array or object to setDaysOfMonth()");
+    }
+
+    // add this daily interval to the list of rules to match
+    self.rules.push({
+        type : 'daysOfMonth',
+        days : ourDays,
+    });
+
+    return self;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // ... and the magic 'matches' function
 
@@ -145,8 +171,13 @@ DateRecur.prototype.matches = function(date) {
             break;
         case 'monthlyInterval':
             diffMonths = diffInMonths(self.start, date);
-            console.log('diffMonths=' + diffMonths);
             if ( (diffMonths % rule.interval) !== 0 ) {
+                return false;
+            }
+            break;
+        case 'daysOfMonth':
+            // if this day of month is not in rule.days, return false
+            if ( !rule.days[date.getDate()] ) {
                 return false;
             }
             break;
