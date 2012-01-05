@@ -109,6 +109,10 @@ DateRecur.prototype.getStartOfWeek = function(date) {
     return d;
 }
 
+DateRecur.prototype.getStartOfYear = function(date) {
+    return new Date('' + date.getFullYear() + '-01-01');
+}
+
 DateRecur.prototype.setStartOfWeek = function(dayNumber) {
     checkRange(0, 6, [ dayNumber ]);
     this.startOfWeek = dayNumber;
@@ -120,6 +124,14 @@ DateRecur.prototype.weekOfMonth = function(date) {
     var week0 = this.getStartOfWeek(first);
 
     // our weeks are from week 0 to week 4
+    return this.diffInWeeks(week0, date);
+}
+
+DateRecur.prototype.weekOfYear = function(date) {
+    var first = this.getStartOfYear(date);
+    var week0 = this.getStartOfWeek(first);
+
+    // our weeks are from week 0 to week 52
     return this.diffInWeeks(week0, date);
 }
 
@@ -296,6 +308,37 @@ DateRecur.prototype.setWeeksOfMonth = function(weeks) {
     return self;
 }
 
+DateRecur.prototype.setWeeksOfYear = function(weeks) {
+    var self = this;
+    var ourWeeks = {};
+
+    // weeks can be an array or object
+    if ( _.isArray(weeks) ) {
+        weeks.forEach(function(v) {
+            ourWeeks[v] = true;
+        });
+    }
+    else if ( _.isObject(weeks) ) {
+        ourWeeks = weeks;
+    }
+    else if ( _.isNumber(weeks) ) {
+        ourWeeks = {};
+        ourWeeks[weeks] = true;
+    }
+    else {
+        throw Error("Provide an array or object to setWeeksOfMonth()");
+    }
+
+    checkRange(0, 52, _.keys(ourWeeks));
+
+    self.rules.push({
+        type  : 'weeksOfYear',
+        weeks : ourWeeks,
+    });
+
+    return self;
+}
+
 DateRecur.prototype.setMonthsOfYear = function(months) {
     var self = this;
     var ourMonths = {};
@@ -388,9 +431,16 @@ DateRecur.prototype.matches = function(date) {
             }
             break;
         case 'weeksOfMonth':
-            // if this week of months is not in rule.weeks, return false
+            // if this weeks of month is not in rule.weeks, return false
             weekOfMonth = self.weekOfMonth(date);
             if ( !rule.weeks[weekOfMonth] ) {
+                return false;
+            }
+            break;
+        case 'weeksOfYear':
+            // if this week of year is not in rule.weeks, return false
+            weekOfYear = self.weekOfYear(date);
+            if ( !rule.weeks[weekOfYear] ) {
                 return false;
             }
             break;
