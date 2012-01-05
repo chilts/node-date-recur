@@ -18,7 +18,7 @@ require('date-utils'); // polyfills the Date object with extra things
 
 var millisecondsInOneDay = 24 * 60 * 60 * 1000;
 
-var days = {
+var DAYS = {
     Sun : 0, sun : 0, Sunday    : 0, sunday    : 0,
     Mon : 1, mon : 1, Monday    : 1, monday    : 1,
     Tue : 2, tue : 2, Tuesday   : 2, tuesday   : 2,
@@ -28,7 +28,7 @@ var days = {
     Sat : 6, sat : 6, Saturday  : 6, saturday  : 6,
 };
 
-var months = {
+var MONTHS = {
     Jan :  1, jan :  1, January   :  1, january   :  1,
     Feb :  2, feb :  2, February  :  2, february  :  2,
     Mar :  3, mar :  3, March     :  3, march     :  3,
@@ -271,6 +271,15 @@ DateRecur.prototype.setDaysOfMonth = function(days) {
     return self;
 }
 
+function convertDayNamesToNumbers(ourDays) {
+    _.each(ourDays, function(v, k) {
+        if ( typeof v === 'string' ) {
+            ourDays[k] = DAYS[v];
+        }
+    });
+    return ourDays;
+}
+
 DateRecur.prototype.setDaysOfWeek = function(days) {
     var self = this;
     var ourDays = {};
@@ -292,6 +301,7 @@ DateRecur.prototype.setDaysOfWeek = function(days) {
         throw Error("Provide an array or object to setDaysOfWeek()");
     }
 
+    ourDays = convertDayNamesToNumbers(ourDays);
     checkRange(0, 6, _.keys(ourDays));
 
     self.rules.push({
@@ -362,6 +372,14 @@ DateRecur.prototype.setWeeksOfYear = function(weeks) {
     });
 
     return self;
+}
+
+function convertMonthNamesToNumbers(ourMonths) {
+    _.each(ourMonths, function(v, k) {
+        if ( typeof v === 'string' ) {
+            ourMonths[k] = MONTHS[v];
+        }
+    });
 }
 
 DateRecur.prototype.setMonthsOfYear = function(months) {
@@ -495,12 +513,12 @@ module.exports = function(start, end) {
 };
 
 // add all of the days
-_.each(days, function(v, k) {
+_.each(DAYS, function(v, k) {
     module.exports[k] = v;
 });
 
 // add all of the months
-_.each(months, function(v, k) {
+_.each(MONTHS, function(v, k) {
     module.exports[k] = v;
 });
 

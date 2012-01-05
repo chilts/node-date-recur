@@ -17,7 +17,7 @@ var recur = require('../date-recur');
 // --------------------------------------------------------------------------------------------------------------------
 
 test("First quarter", function(t) {
-    var r = recur().setMonthsOfYear([ 1, 2, 3 ]);
+    var r = recur().setMonthsOfYear([ recur.January, recur.Feb, recur.march ]);
 
     t.ok(r.matches('2012-01-01'), 'first day of the year');
     t.ok(r.matches('2012-03-31'), 'last day of the quarter');
