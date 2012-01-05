@@ -35,7 +35,7 @@ var months = {
     Apr :  4, apr :  4, April     :  4, april     :  4,
     May :  5, may :  5, May       :  5, may       :  5,
     Jun :  6, jun :  6, June      :  6, june      :  6,
-    Jul :  7, jul :  7, Jull      :  7, jull      :  7,
+    Jul :  7, jul :  7, July      :  7, july      :  7,
     Aug :  8, aug :  8, August    :  8, august    :  8,
     Sep :  9, sep :  9, September :  9, september :  9,
     Oct : 10, oct : 10, October   : 10, october   : 10,
