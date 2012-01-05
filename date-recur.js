@@ -138,9 +138,12 @@ DateRecur.prototype.getStartOfYear = function(date) {
     return new Date('' + date.getFullYear() + '-01-01');
 }
 
-DateRecur.prototype.setStartOfWeek = function(dayNumber) {
-    checkRange(0, 6, [ dayNumber ]);
-    this.startOfWeek = dayNumber;
+DateRecur.prototype.setStartOfWeek = function(day) {
+    if ( _.isString(day) ) {
+        day = DAYS[day];
+    }
+    checkRange(0, 6, [ day ]);
+    this.startOfWeek = day;
     return this;
 }
 

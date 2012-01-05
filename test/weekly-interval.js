@@ -52,6 +52,12 @@ test("interval of 2 weeks (start of week on Sunday)", function(t) {
     // Sunday
     r.setStartOfWeek(0);
 
+    // also, just check a few strings too
+    r.setStartOfWeek('Sunday');
+    r.setStartOfWeek('sunday');
+    r.setStartOfWeek('Sun');
+    r.setStartOfWeek('sun');
+
     t.notOk(r.matches('2012-01-02'), 'does not match day before start');
 
     t.ok(r.matches('2012-01-03'), 'matches start week');
