@@ -18,6 +18,31 @@ require('date-utils'); // polyfills the Date object with extra things
 
 var millisecondsInOneDay = 24 * 60 * 60 * 1000;
 
+var days = {
+    Sun : 0, sun : 0, Sunday    : 0, sunday    : 0,
+    Mon : 1, mon : 1, Monday    : 1, monday    : 1,
+    Tue : 2, tue : 2, Tuesday   : 2, tuesday   : 2,
+    Wed : 3, wed : 3, Wednesday : 3, wednesday : 3,
+    Thu : 4, thu : 4, Thursday  : 4, thursday  : 4,
+    Fri : 5, fri : 5, Friday    : 5, friday    : 5,
+    Sat : 6, sat : 6, Saturday  : 6, saturday  : 6,
+};
+
+var months = {
+    Jan :  1, jan :  1, January   :  1, january   :  1,
+    Feb :  2, feb :  2, February  :  2, february  :  2,
+    Mar :  3, mar :  3, March     :  3, march     :  3,
+    Apr :  4, apr :  4, April     :  4, april     :  4,
+    May :  5, may :  5, May       :  5, may       :  5,
+    Jun :  6, jun :  6, June      :  6, june      :  6,
+    Jul :  7, jul :  7, Jull      :  7, jull      :  7,
+    Aug :  8, aug :  8, August    :  8, august    :  8,
+    Sep :  9, sep :  9, September :  9, september :  9,
+    Oct : 10, oct : 10, October   : 10, october   : 10,
+    Nov : 11, nov : 11, November  : 11, november  : 11,
+    Dec : 12, dec : 12, December  : 12, december  : 12,
+};
+
 // --------------------------------------------------------------------------------------------------------------------
 
 // utility functions
@@ -468,5 +493,15 @@ module.exports = function(start, end) {
 
     return new DateRecur({ start : start, end : end });
 };
+
+// add all of the days
+_.each(days, function(v, k) {
+    module.exports[k] = v;
+});
+
+// add all of the months
+_.each(months, function(v, k) {
+    module.exports[k] = v;
+});
 
 // --------------------------------------------------------------------------------------------------------------------
