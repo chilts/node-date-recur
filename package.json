@@ -1,7 +1,7 @@
 {
     "name" : "date-recur",
     "description": "Create a recurring date and query it to see if it lands on a particular date.",
-    "version" : "0.2.0",
+    "version" : "0.3.0",
     "author": {
         "name":"Andrew Chilton",
         "email":"chilts@appsattic.com",

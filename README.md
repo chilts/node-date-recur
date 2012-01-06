@@ -133,7 +133,6 @@ The start of the week defaults to Monday (value 1). You may want to set it to Su
     var r5 = recur().setStartOfWeek('mon');
 ```
 
-
 ## .setDaysOfWeek(daysOfWeek) ##
 
 Sets which days of each week the event occurs on. 'daysOfWeek' can be a number, array or object (where the keys are the
