@@ -84,6 +84,19 @@ Since this is a small (but very useful) library, I'll show you a number of examp
 
 ```
 
+## .matches(date) ##
+
+Returns true or false depending on whether your recurring date lands on the date passed in.
+
+```
+    var fri13th = recur().setDayOfMonth(13).setDayOfWeek(5);
+    fri13th.matches('2012-01-13;);           // jan 2011 is true
+    fri13th.matches(new Date('2012-01-13')); // jan 2011 is true
+    fri13th.matches('2012-02-13;);           // feb 2012 is false
+    fri13th.matches(new Date('2012-02-13')); // feb 2012 is false
+
+```
+
 ## .start(date) ##
 
 As well as passing a start date to the constructor, you can use this method too. A start date is useful to limit where
