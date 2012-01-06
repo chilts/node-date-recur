@@ -81,7 +81,6 @@ Since this is a small (but very useful) library, I'll show you a number of examp
         .setMonthOfYear(11)
         .setDayOfWeek(2)
         .setDayOfMonth([2, 3, 4, 5, 6, 7, 8]);
-
 ```
 
 ## .matches(date) ##
@@ -94,7 +93,6 @@ Returns true or false depending on whether your recurring date lands on the date
     fri13th.matches(new Date('2012-01-13')); // jan 2011 is true
     fri13th.matches('2012-02-13;);           // feb 2012 is false
     fri13th.matches(new Date('2012-02-13')); // feb 2012 is false
-
 ```
 
 ## .start(date) ##
@@ -181,7 +179,6 @@ setting. You do not need a start date for this restriction.
 ```
     // occurs every day in the 3rd week of each month
     var week3 = recur().setWeeksOfMonth(2);
-
 ```
 
 NOTE1: this may not do what you want it to. For example, for the first Monday of every month, the following will not
@@ -211,7 +208,6 @@ do not need a start date for this restriction.
 
     // occurs every day in the 3rd (week 2) and 5th (week 4) weeks of every year
     var weeks3and5 = recur().setWeeksOfYear([2, 4]);
-
 ```
 
 NOTE1: this may not do what you want it to. For example, for the first Monday of the year, the following will not
