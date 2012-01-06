@@ -41,7 +41,7 @@ Since this is a small (but very useful) library, I'll show you a number of examp
 
     // .. as does Valentine's Day
     var valentines = recur()
-        .setMonthOfYear(2)
+        .setMonthOfYear('February')
         .setDayOfMonth(14);
 
     // In the 3rd quarter of this year, I will breakdance every day
@@ -50,19 +50,19 @@ Since this is a small (but very useful) library, I'll show you a number of examp
 
     // NZ FOSS meets at lunch on the first Tuesday of every month
     var lunch = recur()
-        .setDayOfWeek(2)
+        .setDayOfWeek('Tue')
         .setDayOfMonth([1, 2, 3, 4, 5, 6, 7]);
 
     // My birthday is every leap year since 1976
     var lunch = recur('1976-02-29')
         .setYearlyInterval(4)
         .setDayOfMonth(29)
-        .setMonthOfYear(2);
+        .setMonthOfYear('Feb');
 
     // Friday the 13th can be qutie scary, so ping me when it occurs
     var fri13th = recur()
         .setDayOfMonth(13)
-        .setDayOfWeek(5);
+        .setDayOfWeek('fri');
 
     // There is a bi-monthly dance at the local club (on the 3rd Saturday)
     var lunch = recur('2012-01-01')
@@ -78,8 +78,8 @@ Since this is a small (but very useful) library, I'll show you a number of examp
     // US Elections are every 4 years, on a Tuesday in November (not the 1st)
     var election = recur('2012-01-01')
         .setYearlyInterval(4)
-        .setMonthOfYear(11)
-        .setDayOfWeek(2)
+        .setMonthOfYear('November')
+        .setDayOfWeek('Tuesday')
         .setDayOfMonth([2, 3, 4, 5, 6, 7, 8]);
 ```
 
