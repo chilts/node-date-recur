@@ -138,11 +138,12 @@ DateRecur.prototype.setStartOfWeek = function(day) {
 }
 
 DateRecur.prototype.weekOfMonth = function(date) {
-    var first = this.getStartOfMonth(date);
-    var week0 = this.getStartOfWeek(first);
-
+    var weekOfMonth = Math.ceil(moment(date).date() / 7);
     // our weeks are from week 0 to week 4
-    return this.diffInWeeks(week0, date);
+    if(weekOfMonth > 4){
+      weekOfMonth = 4;
+    }
+    return weekOfMonth;
 }
 
 DateRecur.prototype.weekOfYear = function(date) {
