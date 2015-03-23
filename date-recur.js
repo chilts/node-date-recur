@@ -12,6 +12,7 @@
 
 var _ = require('underscore');
 require('date-utils'); // polyfills the Date object with extra things
+var moment = require('moment');
 
 // --------------------------------------------------------------------------------------------------------------------
 // constants
@@ -47,18 +48,7 @@ var MONTHS = {
 
 // utility functions
 function toDate(d) {
-    if ( _.isDate(d) ) {
-        // just get the date (no time)
-        return new Date(d.toISOString().substr(0, 10));
-    }
-
-    // check if the date string looks ok
-    if ( typeof d === 'string' && d.match(/^(\d\d\d\d-\d\d-\d\d)$/) ) {
-        return new Date(d);
-    }
-
-    // shouldn't ever get here, so throw an error
-    throw 'Unknown date format : ' + d;
+    return moment(d).startOf('day').toDate();
 }
 
 function diffInDays(d1, d2) {
