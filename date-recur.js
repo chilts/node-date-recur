@@ -98,18 +98,20 @@ DateRecur.prototype.end = function(date) {
   return this;
 }
 
-DateRecur.prototype.getOccurrences = function() {
+DateRecur.prototype.getOccurrences = function(dates) {
   var self = this;
-  if (!self.start  || !self.end) {
-    throw Error('You can only get occurrences if you specify a start and end date');
+  if (!dates && (!self.start  || !self.end)) {
+    throw Error('You can only get occurrences if you specify a start and end date or if you provide your own array of dates');
   }
 
-  // Get all dates between start and end dates
-  var dates = [];
-  for (var d = moment(self.start).clone().toDate(); d <= self.end; d.setDate(d.getDate() + 1)) {
-    dates.push(new Date(d));
+  // if the user does not provide their own array of dates
+  // then create one with all the dates between start and end dates
+  if(!dates){
+    dates = [];
+    for (var d = moment(self.start).clone().toDate(); d <= self.end; d.setDate(d.getDate() + 1)) {
+      dates.push(new Date(d));
+    }
   }
-
   // Run filter and only return dates that match
   return _.filter(dates, function (date) {
     return self.matches(date);
