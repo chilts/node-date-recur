@@ -98,6 +98,24 @@ DateRecur.prototype.end = function(date) {
   return this;
 }
 
+DateRecur.prototype.getOccurrences = function() {
+  var self = this;
+  if (!self.start  || !self.end) {
+    throw Error('You can only get occurrences if you specify a start and end date');
+  }
+
+  // Get all dates between start and end dates
+  var dates = [];
+  for (var d = moment(self.start).clone().toDate(); d <= self.end; d.setDate(d.getDate() + 1)) {
+    dates.push(new Date(d));
+  }
+
+  // Run filter and only return dates that match
+  return _.filter(dates, function (date) {
+    return self.matches(date);
+  });
+}
+
 DateRecur.prototype.diffInWeeks = function(d1, d2) {
   return moment(d2).diff(d1, 'weeks', true);
 }
@@ -402,6 +420,7 @@ DateRecur.prototype.setMonthsOfYear = function(months) {
 
   return self;
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // ... and the magic 'matches' function
