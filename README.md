@@ -59,7 +59,7 @@ var lunch = recur('1976-02-29')
     .setDayOfMonth(29)
     .setMonthOfYear('Feb');
 
-// Friday the 13th can be qutie scary, so ping me when it occurs
+// Friday the 13th can be quite scary, so ping me when it occurs
 var fri13th = recur()
     .setDayOfMonth(13)
     .setDayOfWeek('fri');
