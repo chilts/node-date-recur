@@ -12,6 +12,7 @@
 
 var _ = require('underscore');
 require('date-utils'); // polyfills the Date object with extra things
+var moment = require('moment');
 
 // --------------------------------------------------------------------------------------------------------------------
 // constants
@@ -19,510 +20,517 @@ require('date-utils'); // polyfills the Date object with extra things
 var millisecondsInOneDay = 24 * 60 * 60 * 1000;
 
 var DAYS = {
-    Sun : 0, sun : 0, Sunday    : 0, sunday    : 0,
-    Mon : 1, mon : 1, Monday    : 1, monday    : 1,
-    Tue : 2, tue : 2, Tuesday   : 2, tuesday   : 2,
-    Wed : 3, wed : 3, Wednesday : 3, wednesday : 3,
-    Thu : 4, thu : 4, Thursday  : 4, thursday  : 4,
-    Fri : 5, fri : 5, Friday    : 5, friday    : 5,
-    Sat : 6, sat : 6, Saturday  : 6, saturday  : 6,
+  Sun : 0, sun : 0, Sunday    : 0, sunday    : 0,
+  Mon : 1, mon : 1, Monday    : 1, monday    : 1,
+  Tue : 2, tue : 2, Tuesday   : 2, tuesday   : 2,
+  Wed : 3, wed : 3, Wednesday : 3, wednesday : 3,
+  Thu : 4, thu : 4, Thursday  : 4, thursday  : 4,
+  Fri : 5, fri : 5, Friday    : 5, friday    : 5,
+  Sat : 6, sat : 6, Saturday  : 6, saturday  : 6,
 };
 
 var MONTHS = {
-    Jan :  1, jan :  1, January   :  1, january   :  1,
-    Feb :  2, feb :  2, February  :  2, february  :  2,
-    Mar :  3, mar :  3, March     :  3, march     :  3,
-    Apr :  4, apr :  4, April     :  4, april     :  4,
-    May :  5, may :  5, May       :  5, may       :  5,
-    Jun :  6, jun :  6, June      :  6, june      :  6,
-    Jul :  7, jul :  7, July      :  7, july      :  7,
-    Aug :  8, aug :  8, August    :  8, august    :  8,
-    Sep :  9, sep :  9, September :  9, september :  9,
-    Oct : 10, oct : 10, October   : 10, october   : 10,
-    Nov : 11, nov : 11, November  : 11, november  : 11,
-    Dec : 12, dec : 12, December  : 12, december  : 12,
+  Jan :  1, jan :  1, January   :  1, january   :  1,
+  Feb :  2, feb :  2, February  :  2, february  :  2,
+  Mar :  3, mar :  3, March     :  3, march     :  3,
+  Apr :  4, apr :  4, April     :  4, april     :  4,
+  May :  5, may :  5, May       :  5, may       :  5,
+  Jun :  6, jun :  6, June      :  6, june      :  6,
+  Jul :  7, jul :  7, July      :  7, july      :  7,
+  Aug :  8, aug :  8, August    :  8, august    :  8,
+  Sep :  9, sep :  9, September :  9, september :  9,
+  Oct : 10, oct : 10, October   : 10, october   : 10,
+  Nov : 11, nov : 11, November  : 11, november  : 11,
+  Dec : 12, dec : 12, December  : 12, december  : 12,
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 
 // utility functions
 function toDate(d) {
-    if ( _.isDate(d) ) {
-        // just get the date (no time)
-        return new Date(d.toISOString().substr(0, 10));
-    }
-
-    // check if the date string looks ok
-    if ( typeof d === 'string' && d.match(/^(\d\d\d\d-\d\d-\d\d)$/) ) {
-        return new Date(d);
-    }
-
-    // shouldn't ever get here, so throw an error
-    throw 'Unknown date format : ' + d;
+  return moment(d).startOf('day').toDate();
 }
 
 function diffInDays(d1, d2) {
-    return (d2 - d1) / millisecondsInOneDay;
+  return moment(d2).diff(d1, 'days', true);
 }
 
 function diffInMonths(d1, d2) {
-    return (d2.getUTCFullYear() - d1.getUTCFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  return (d2.getUTCFullYear() - d1.getUTCFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
 }
 
 function checkRange(low, high, list) {
-    list.forEach(function(v) {
-        if ( v < low || v > high ) {
-            throw Error('Value should be in range ' + low + ' to ' + high);
-        }
-    });
+  list.forEach(function(v) {
+    if ( v < low || v > high ) {
+      throw Error('Value should be in range ' + low + ' to ' + high);
+    }
+  });
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
 // DateRecur object
 var DateRecur = function(options) {
-    if ( options.start ) {
-        this.start = toDate(options.start);
-    }
+  if ( options.start ) {
+    this.start = toDate(options.start);
+  }
 
-    if ( options.end ) {
-        this.end = toDate(options.end);
-    }
+  if ( options.end ) {
+    this.end = toDate(options.end);
+  }
 
-    // default this to Monday
-    this.startOfWeek = 1
+  // default this to Monday
+  this.startOfWeek = 1
 
-    // this is our list of rules, every one of which should match
-    this.rules = [];
+  // this is our list of rules, every one of which should match
+  this.rules = [];
 
-    return this;
+  return this;
 }
 
 DateRecur.prototype.start = function(date) {
-    this.start = toDate(date);
-    return this;
+  this.start = toDate(date);
+  return this;
 }
 
 DateRecur.prototype.end = function(date) {
-    this.end = toDate(date);
-    return this;
+  this.end = toDate(date);
+  return this;
+}
+
+DateRecur.prototype.getOccurrences = function(dates) {
+  var self = this;
+  if (!dates && (!self.start  || !self.end)) {
+    throw Error('You can only get occurrences if you specify a start and end date or if you provide your own array of dates');
+  }
+
+  // if the user does not provide their own array of dates
+  // then create one with all the dates between start and end dates
+  if(!dates){
+    dates = [];
+    for (var d = moment(self.start).clone().toDate(); d <= self.end; d.setDate(d.getDate() + 1)) {
+      dates.push(new Date(d));
+    }
+  }
+  // Run filter and only return dates that match
+  return _.filter(dates, function (date) {
+    return self.matches(date);
+  });
 }
 
 DateRecur.prototype.diffInWeeks = function(d1, d2) {
-    // get the start of the week for both dates
-    d1 = this.getStartOfWeek(d1);
-    d2 = this.getStartOfWeek(d2);
-
-    return diffInDays(d1, d2) / 7;
+  return moment(d2).diff(d1, 'weeks', true);
 }
 
 DateRecur.prototype.getStartOfMonth = function(date) {
-    // since we'll be changing the date, make a copy of it
-    var d = new Date(date);
-    while ( d.getDate() !== 1 ) {
-        d.addDays(-1);
-    }
-    return d;
+  // since we'll be changing the date, make a copy of it
+  var d = new Date(date);
+  while ( d.getDate() !== 1 ) {
+    d.addDays(-1);
+  }
+  return d;
 }
 
 DateRecur.prototype.getStartOfWeek = function(date) {
-    // since we'll be changing the date, make a copy of it
-    var d = new Date(date);
-    while ( d.getDay() !== this.startOfWeek ) {
-        d.addDays(-1);
-    }
-    return d;
+  // since we'll be changing the date, make a copy of it
+  var d = new Date(date);
+  while ( d.getDay() !== this.startOfWeek ) {
+    d.addDays(-1);
+  }
+  return d;
 }
 
 DateRecur.prototype.getStartOfYear = function(date) {
-    return new Date('' + date.getFullYear() + '-01-01');
+  return new Date('' + date.getFullYear() + '-01-01');
 }
 
 DateRecur.prototype.setStartOfWeek = function(day) {
-    if ( _.isString(day) ) {
-        day = DAYS[day];
-    }
-    checkRange(0, 6, [ day ]);
-    this.startOfWeek = day;
-    return this;
+  if ( _.isString(day) ) {
+    day = DAYS[day];
+  }
+  checkRange(0, 6, [ day ]);
+  this.startOfWeek = day;
+  return this;
 }
 
 DateRecur.prototype.weekOfMonth = function(date) {
-    var first = this.getStartOfMonth(date);
-    var week0 = this.getStartOfWeek(first);
-
-    // our weeks are from week 0 to week 4
-    return this.diffInWeeks(week0, date);
+  var weekOfMonth = Math.ceil(moment(date).date() / 7);
+  // our weeks are from week 0 to week 4
+  if(weekOfMonth > 4){
+    weekOfMonth = 4;
+  }
+  return weekOfMonth;
 }
 
 DateRecur.prototype.weekOfYear = function(date) {
-    var first = this.getStartOfYear(date);
-    var week0 = this.getStartOfWeek(first);
+  var first = this.getStartOfYear(date);
+  var week0 = this.getStartOfWeek(first);
 
-    // our weeks are from week 0 to week 52
-    return this.diffInWeeks(week0, date);
+  // our weeks are from week 0 to week 52
+  return this.diffInWeeks(week0, date);
 }
 
 DateRecur.prototype.setDailyInterval = function(interval) {
-    var self = this;
-    interval = parseInt(interval);
+  var self = this;
+  interval = parseInt(interval);
 
-    if ( !self.start ) {
-        throw Error('You can only add an interval if this recurrence has a start date');
-    }
+  if ( !self.start ) {
+    throw Error('You can only add an interval if this recurrence has a start date');
+  }
 
-    if ( interval <= 0 ) {
-        throw Error('Interval must be greater than zero');
-    }
+  if ( interval <= 0 ) {
+    throw Error('Interval must be greater than zero');
+  }
 
-    self.rules.push({
-        type     : 'dailyInterval',
-        interval : interval,
-    });
+  self.rules.push({
+    type     : 'dailyInterval',
+    interval : interval,
+  });
 
-    return self;
+  return self;
 }
 
 DateRecur.prototype.setWeeklyInterval = function(interval) {
-    var self = this;
-    interval = parseInt(interval);
+  var self = this;
+  interval = parseInt(interval);
 
-    if ( !self.start ) {
-        throw Error('You can only add an interval if this recurrence has a start date');
-    }
+  if ( !self.start ) {
+    throw Error('You can only add an interval if this recurrence has a start date');
+  }
 
-    if ( interval <= 0 ) {
-        throw Error('Interval must be greater than zero');
-    }
+  if ( interval <= 0 ) {
+    throw Error('Interval must be greater than zero');
+  }
 
-    self.rules.push({
-        type     : 'weeklyInterval',
-        interval : interval,
-    });
+  self.rules.push({
+    type     : 'weeklyInterval',
+    interval : interval,
+  });
 
-    return self;
+  return self;
 }
 
 DateRecur.prototype.setMonthlyInterval = function(interval) {
-    var self = this;
-    interval = parseInt(interval);
+  var self = this;
+  interval = parseInt(interval);
 
-    if ( !self.start ) {
-        throw Error('You can only add an interval if this recurrence has a start date');
-    }
+  if ( !self.start ) {
+    throw Error('You can only add an interval if this recurrence has a start date');
+  }
 
-    if ( interval <= 0 ) {
-        throw Error('Interval must be greater than zero');
-    }
+  if ( interval <= 0 ) {
+    throw Error('Interval must be greater than zero');
+  }
 
-    self.rules.push({
-        type     : 'monthlyInterval',
-        interval : interval,
-    });
+  self.rules.push({
+    type     : 'monthlyInterval',
+    interval : interval,
+  });
 
-    return self;
+  return self;
 }
 
 DateRecur.prototype.setYearlyInterval = function(interval) {
-    var self = this;
-    interval = parseInt(interval);
+  var self = this;
+  interval = parseInt(interval);
 
-    if ( !self.start ) {
-        throw Error('You can only add an interval if this recurrence has a start date');
-    }
+  if ( !self.start ) {
+    throw Error('You can only add an interval if this recurrence has a start date');
+  }
 
-    if ( interval <= 0 ) {
-        throw Error('Interval must be greater than zero');
-    }
+  if ( interval <= 0 ) {
+    throw Error('Interval must be greater than zero');
+  }
 
-    self.rules.push({
-        type     : 'yearlyInterval',
-        interval : interval,
-    });
+  self.rules.push({
+    type     : 'yearlyInterval',
+    interval : interval,
+  });
 
-    return self;
+  return self;
 }
 
 DateRecur.prototype.setDaysOfMonth = function(days) {
-    var self = this;
-    var ourDays = {};
+  var self = this;
+  var ourDays = {};
 
-    // days can be an array or object
-    if ( _.isArray(days) ) {
-        days.forEach(function(v) {
-            ourDays[v] = true;
-        });
-    }
-    else if ( _.isObject(days) ) {
-        ourDays = days;
-    }
-    else if ( _.isNumber(days) ) {
-        ourDays = {};
-        ourDays[days] = true;
-    }
-    else {
-        throw Error("Provide an array or object to setDaysOfMonth()");
-    }
-
-    checkRange(1, 31, _.keys(ourDays));
-
-    self.rules.push({
-        type : 'daysOfMonth',
-        days : ourDays,
+  // days can be an array or object
+  if ( _.isArray(days) ) {
+    days.forEach(function(v) {
+      ourDays[v] = true;
     });
+  }
+  else if ( _.isObject(days) ) {
+    ourDays = days;
+  }
+  else if ( _.isNumber(days) ) {
+    ourDays = {};
+    ourDays[days] = true;
+  }
+  else {
+    throw Error("Provide an array or object to setDaysOfMonth()");
+  }
 
-    return self;
+  checkRange(1, 31, _.keys(ourDays));
+
+  self.rules.push({
+    type : 'daysOfMonth',
+    days : ourDays,
+  });
+
+  return self;
 }
 
 function convertDayNamesToNumbers(ourDays) {
-    _.each(ourDays, function(v, k) {
-        if ( typeof v === 'string' ) {
-            ourDays[k] = DAYS[v];
-        }
-    });
-    return ourDays;
+  _.each(ourDays, function(v, k) {
+    if ( typeof v === 'string' ) {
+      ourDays[k] = DAYS[v];
+    }
+  });
+  return ourDays;
 }
 
 DateRecur.prototype.setDaysOfWeek = function(days) {
-    var self = this;
-    var ourDays = {};
+  var self = this;
+  var ourDays = {};
 
-    // days can be an array or object
-    if ( _.isArray(days) ) {
-        days.forEach(function(v) {
-            ourDays[v] = true;
-        });
-    }
-    else if ( _.isObject(days) ) {
-        ourDays = days;
-    }
-    else if ( _.isNumber(days) ) {
-        ourDays = {};
-        ourDays[days] = true;
-    }
-    else {
-        throw Error("Provide an array or object to setDaysOfWeek()");
-    }
-
-    ourDays = convertDayNamesToNumbers(ourDays);
-    checkRange(0, 6, _.keys(ourDays));
-
-    self.rules.push({
-        type : 'daysOfWeek',
-        days : ourDays,
+  // days can be an array or object
+  if ( _.isArray(days) ) {
+    days.forEach(function(v) {
+      ourDays[v] = true;
     });
+  }
+  else if ( _.isObject(days) ) {
+    ourDays = days;
+  }
+  else if ( _.isNumber(days) ) {
+    ourDays = {};
+    ourDays[days] = true;
+  }
+  else {
+    throw Error("Provide an array or object to setDaysOfWeek()");
+  }
 
-    return self;
+  ourDays = convertDayNamesToNumbers(ourDays);
+  checkRange(0, 6, _.keys(ourDays));
+
+  self.rules.push({
+    type : 'daysOfWeek',
+    days : ourDays,
+  });
+
+  return self;
 }
 
 DateRecur.prototype.setWeeksOfMonth = function(weeks) {
-    var self = this;
-    var ourWeeks = {};
+  var self = this;
+  var ourWeeks = {};
 
-    // weeks can be an array or object
-    if ( _.isArray(weeks) ) {
-        weeks.forEach(function(v) {
-            ourWeeks[v] = true;
-        });
-    }
-    else if ( _.isObject(weeks) ) {
-        ourWeeks = weeks;
-    }
-    else if ( _.isNumber(weeks) ) {
-        ourWeeks = {};
-        ourWeeks[weeks] = true;
-    }
-    else {
-        throw Error("Provide an array or object to setWeeksOfMonth()");
-    }
-
-    checkRange(0, 4, _.keys(ourWeeks));
-
-    self.rules.push({
-        type  : 'weeksOfMonth',
-        weeks : ourWeeks,
+  // weeks can be an array or object
+  if ( _.isArray(weeks) ) {
+    weeks.forEach(function(v) {
+      ourWeeks[v] = true;
     });
+  }
+  else if ( _.isObject(weeks) ) {
+    ourWeeks = weeks;
+  }
+  else if ( _.isNumber(weeks) ) {
+    ourWeeks = {};
+    ourWeeks[weeks] = true;
+  }
+  else {
+    throw Error("Provide an array or object to setWeeksOfMonth()");
+  }
 
-    return self;
+  checkRange(0, 4, _.keys(ourWeeks));
+
+  self.rules.push({
+    type  : 'weeksOfMonth',
+    weeks : ourWeeks,
+  });
+
+  return self;
 }
 
 DateRecur.prototype.setWeeksOfYear = function(weeks) {
-    var self = this;
-    var ourWeeks = {};
+  var self = this;
+  var ourWeeks = {};
 
-    // weeks can be an array or object
-    if ( _.isArray(weeks) ) {
-        weeks.forEach(function(v) {
-            ourWeeks[v] = true;
-        });
-    }
-    else if ( _.isObject(weeks) ) {
-        ourWeeks = weeks;
-    }
-    else if ( _.isNumber(weeks) ) {
-        ourWeeks = {};
-        ourWeeks[weeks] = true;
-    }
-    else {
-        throw Error("Provide an array or object to setWeeksOfMonth()");
-    }
-
-    checkRange(0, 52, _.keys(ourWeeks));
-
-    self.rules.push({
-        type  : 'weeksOfYear',
-        weeks : ourWeeks,
+  // weeks can be an array or object
+  if ( _.isArray(weeks) ) {
+    weeks.forEach(function(v) {
+      ourWeeks[v] = true;
     });
+  }
+  else if ( _.isObject(weeks) ) {
+    ourWeeks = weeks;
+  }
+  else if ( _.isNumber(weeks) ) {
+    ourWeeks = {};
+    ourWeeks[weeks] = true;
+  }
+  else {
+    throw Error("Provide an array or object to setWeeksOfMonth()");
+  }
 
-    return self;
+  checkRange(0, 52, _.keys(ourWeeks));
+
+  self.rules.push({
+    type  : 'weeksOfYear',
+    weeks : ourWeeks,
+  });
+
+  return self;
 }
 
 function convertMonthNamesToNumbers(ourMonths) {
-    _.each(ourMonths, function(v, k) {
-        if ( typeof v === 'string' ) {
-            ourMonths[k] = MONTHS[v];
-        }
-    });
+  _.each(ourMonths, function(v, k) {
+    if ( typeof v === 'string' ) {
+      ourMonths[k] = MONTHS[v];
+    }
+  });
 }
 
 DateRecur.prototype.setMonthsOfYear = function(months) {
-    var self = this;
-    var ourMonths = {};
+  var self = this;
+  var ourMonths = {};
 
-    // months can be an array or object
-    if ( _.isArray(months) ) {
-        months.forEach(function(v) {
-            ourMonths[v] = true;
-        });
-    }
-    else if ( _.isObject(months) ) {
-        ourMonths = months;
-    }
-    else if ( _.isNumber(days) ) {
-        ourDays = {};
-        ourDays[days] = true;
-    }
-    else {
-        throw Error("Provide an array or object to setMonthsOfYear()");
-    }
-
-    checkRange(1, 12, _.keys(ourMonths));
-
-    self.rules.push({
-        type : 'monthsOfYear',
-        months : ourMonths,
+  // months can be an array or object
+  if ( _.isArray(months) ) {
+    months.forEach(function(v) {
+      ourMonths[v] = true;
     });
+  }
+  else if ( _.isObject(months) ) {
+    ourMonths = months;
+  }
+  else if ( _.isNumber(days) ) {
+    ourDays = {};
+    ourDays[days] = true;
+  }
+  else {
+    throw Error("Provide an array or object to setMonthsOfYear()");
+  }
 
-    return self;
+  checkRange(1, 12, _.keys(ourMonths));
+
+  self.rules.push({
+    type : 'monthsOfYear',
+    months : ourMonths,
+  });
+
+  return self;
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // ... and the magic 'matches' function
 
 DateRecur.prototype.matches = function(date) {
-    var self = this;
+  var self = this;
 
-    // convert to a proper date first
-    date = toDate(date);
+  // convert to a proper date first
+  date = toDate(date);
 
-    // do start and end dates
-    if ( self.start && date < self.start ) {
-        return false;
-    }
+  // do start and end dates
+  if ( self.start && date < self.start ) {
+    return false;
+  }
 
-    if ( self.end && date > self.end ) {
-        return false;
-    }
+  if ( self.end && date > self.end ) {
+    return false;
+  }
 
-    // now loop through all the rules
-    var i, rule, diffDays, diffWeeks, diffMonths, diffYears;
-    for ( i = 0; i < self.rules.length; i++ ) {
-        rule = self.rules[i];
+  // now loop through all the rules
+  var i, rule, diffDays, diffWeeks, diffMonths, diffYears;
+  for ( i = 0; i < self.rules.length; i++ ) {
+    rule = self.rules[i];
 
-        switch ( rule.type ) {
-        case 'dailyInterval':
-            diffDays = diffInDays(self.start, date);
-            if ( (diffDays % rule.interval) !== 0 ) {
-                return false;
-            }
-            break;
-        case 'weeklyInterval':
-            diffWeeks = self.diffInWeeks(self.start, date);
-            if ( (diffWeeks % rule.interval) !== 0 ) {
-                return false;
-            }
-            break;
-        case 'monthlyInterval':
-            diffMonths = diffInMonths(self.start, date);
-            if ( (diffMonths % rule.interval) !== 0 ) {
-                return false;
-            }
-            break;
-        case 'yearlyInterval':
-            diffYears = date.getUTCFullYear() - self.start.getUTCFullYear();
-            if ( (diffYears % rule.interval) !== 0 ) {
-                return false;
-            }
-            break;
-        case 'daysOfMonth':
-            // if this day of month is not in rule.days, return false
-            if ( !rule.days[date.getDate()] ) {
-                return false;
-            }
-            break;
-        case 'daysOfWeek':
-            // if this day of week is not in rule.days, return false
-            if ( !rule.days[date.getDay()] ) {
-                return false;
-            }
-            break;
-        case 'weeksOfMonth':
-            // if this weeks of month is not in rule.weeks, return false
-            weekOfMonth = self.weekOfMonth(date);
-            if ( !rule.weeks[weekOfMonth] ) {
-                return false;
-            }
-            break;
-        case 'weeksOfYear':
-            // if this week of year is not in rule.weeks, return false
-            weekOfYear = self.weekOfYear(date);
-            if ( !rule.weeks[weekOfYear] ) {
-                return false;
-            }
-            break;
-        case 'monthsOfYear':
-            // if this month is not in rule.months, return false
-            if ( !rule.months[date.getMonth()+1] ) {
-                return false;
-            }
-            break;
+    switch ( rule.type ) {
+      case 'dailyInterval':
+        diffDays = diffInDays(self.start, date);
+        if ( (diffDays % rule.interval) !== 0 ) {
+          return false;
         }
+        break;
+      case 'weeklyInterval':
+        diffWeeks = self.diffInWeeks(self.start, date);
+        if ( (diffWeeks % rule.interval) !== 0 ) {
+          return false;
+        }
+        break;
+      case 'monthlyInterval':
+        diffMonths = diffInMonths(self.start, date);
+        if ( (diffMonths % rule.interval) !== 0 ) {
+          return false;
+        }
+        break;
+      case 'yearlyInterval':
+        diffYears = date.getUTCFullYear() - self.start.getUTCFullYear();
+        if ( (diffYears % rule.interval) !== 0 ) {
+          return false;
+        }
+        break;
+      case 'daysOfMonth':
+        // if this day of month is not in rule.days, return false
+        if ( !rule.days[date.getDate()] ) {
+          return false;
+        }
+        break;
+      case 'daysOfWeek':
+        // if this day of week is not in rule.days, return false
+        if ( !rule.days[date.getDay()] ) {
+          return false;
+        }
+        break;
+      case 'weeksOfMonth':
+        // if this weeks of month is not in rule.weeks, return false
+        weekOfMonth = self.weekOfMonth(date);
+        if ( !rule.weeks[weekOfMonth] ) {
+          return false;
+        }
+        break;
+      case 'weeksOfYear':
+        // if this week of year is not in rule.weeks, return false
+        weekOfYear = self.weekOfYear(date);
+        if ( !rule.weeks[weekOfYear] ) {
+          return false;
+        }
+        break;
+      case 'monthsOfYear':
+        // if this month is not in rule.months, return false
+        if ( !rule.months[date.getMonth()+1] ) {
+          return false;
+        }
+        break;
     }
+  }
 
-    // if we passed everything above, then this date matches
-    return true;
+  // if we passed everything above, then this date matches
+  return true;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 // export a utility function
 
 module.exports = function(start, end) {
-    if ( _.isObject(start) ) {
-        // ie. it's a set of options
-        return new DateRecur( start );
-    }
+  if ( _.isObject(start) ) {
+    // ie. it's a set of options
+    return new DateRecur( start );
+  }
 
-    return new DateRecur({ start : start, end : end });
+  return new DateRecur({ start : start, end : end });
 };
 
 // add all of the days
 _.each(DAYS, function(v, k) {
-    module.exports[k] = v;
+  module.exports[k] = v;
 });
 
 // add all of the months
 _.each(MONTHS, function(v, k) {
-    module.exports[k] = v;
+  module.exports[k] = v;
 });
 
 // --------------------------------------------------------------------------------------------------------------------
